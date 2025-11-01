@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HookMaster AI 5.0 ⚡ - TikTok病毒算法征服系统</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 背景装饰 -->
+    <div class="background-gradient"></div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="logo">
+                <h1>⚡ HookMaster AI 5.0</h1>
+                <p class="tagline">TikTok病毒算法征服系统</p>
+            </div>
+            <div class="status-indicator" id="statusIndicator">
+                <span class="status-dot"></span>
+                <span class="status-text">正在检查服务...</span>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 左侧：输入区域 -->
+            <div class="input-section">
+                <div class="card">
+                    <h2>📝 创作需求</h2>
+
+                    <div class="form-group">
+                        <label for="product">产品/服务描述 *</label>
+                        <textarea
+                            id="product"
+                            rows="4"
+                            placeholder="例如：一款能够快速清洁厨房油污的多功能清洁剂，主要成分天然无害，适合家庭使用..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetAudience">目标受众</label>
+                        <input
+                            type="text"
+                            id="targetAudience"
+                            placeholder="例如：25-35岁的都市白领女性"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="additionalRequirements">特殊要求（可选）</label>
+                        <textarea
+                            id="additionalRequirements"
+                            rows="3"
+                            placeholder="例如：需要突出环保概念，避免过度营销感..."
+                        ></textarea>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <h3>⚙️ 生成配置</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="mode">输出模式</label>
+                            <select id="mode">
+                                <option value="lightning">⚡ 闪电模式 (3个脚本，2分钟)</option>
+                                <option value="precision">🎯 精准模式 (10个脚本，5分钟)</option>
+                                <option value="ecosystem">🏆 生态模式 (完整方案，10分钟)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="provider">AI模型</label>
+                            <select id="provider">
+                                <option value="">加载中...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mode-description" id="modeDescription">
+                        <p><strong>⚡ 闪电模式：</strong>快速生成3个立即可执行的TikTok爆款脚本，包含完整15秒时间轴和5个3秒剪辑版本。</p>
+                    </div>
+
+                    <button class="generate-btn" id="generateBtn">
+                        <span class="btn-icon">🚀</span>
+                        <span class="btn-text">生成病毒脚本</span>
+                    </button>
+                </div>
+
+                <!-- TikTok社区参考 -->
+                <div class="card community-card">
+                    <h3>🎯 TikTok热门社区参考</h3>
+                    <div class="community-list" id="communityList">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：输出区域 -->
+            <div class="output-section">
+                <div class="card output-card">
+                    <div class="card-header">
+                        <h2>📊 生成结果</h2>
+                        <div class="output-actions">
+                            <button class="icon-btn" id="copyBtn" title="复制内容" style="display: none;">
+                                <span>📋</span>
+                            </button>
+                            <button class="icon-btn" id="downloadBtn" title="下载为Markdown" style="display: none;">
+                                <span>💾</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="output" class="output-content">
+                        <div class="empty-state">
+                            <div class="empty-icon">🎬</div>
+                            <h3>准备开始创作</h3>
+                            <p>填写左侧表单，点击"生成病毒脚本"按钮开始</p>
+                            <div class="features">
+                                <div class="feature-item">
+                                    <span class="feature-icon">⚡</span>
+                                    <span>15秒完整脚本</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✂️</span>
+                                    <span>5种剪辑版本</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">📈</span>
+                                    <span>数据预测分析</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">💬</span>
+                                    <span>评论区运营</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 元数据显示 -->
+                <div class="card metadata-card" id="metadataCard" style="display: none;">
+                    <h3>📊 生成信息</h3>
+                    <div class="metadata-content" id="metadataContent"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>HookMaster AI 5.0 - 专注TikTok病毒营销 | Made with ❤️ by AI</p>
+            <p class="footer-note">本系统仅供学习和合法营销使用，请遵守TikTok社区规范</p>
+        </footer>
+    </div>
+
+    <!-- 加载提示 -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">AI正在创作中...</p>
+        <p class="loading-subtext">预计需要 <span id="loadingTime">2</span> 分钟</p>
+    </div>
+
+    <!-- Toast通知 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

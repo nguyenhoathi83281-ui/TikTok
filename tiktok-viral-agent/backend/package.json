@@ -1,0 +1,24 @@
+{
+  "name": "tiktok-viral-agent-backend",
+  "version": "1.0.0",
+  "description": "HookMaster AI 5.0 - TikTok病毒算法征服系统后端",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": ["tiktok", "ai", "viral", "marketing"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.0",
+    "openai": "^4.20.0",
+    "@anthropic-ai/sdk": "^0.20.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
