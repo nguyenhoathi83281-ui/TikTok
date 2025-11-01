@@ -704,3 +704,312 @@ select {
     color: black;
   }
 }
+
+/* ==================== 历史记录功能 ==================== */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+#historyBtn {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--primary-color);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  min-width: 18px;
+  text-align: center;
+}
+
+.history-sidebar {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background: var(--bg-card);
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+  z-index: 2001;
+  transition: right 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-sidebar.active {
+  right: 0;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.history-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.history-actions {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.small-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: var(--transition);
+}
+
+.small-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--primary-color);
+}
+
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+}
+
+.history-item {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid transparent;
+}
+
+.history-item:hover {
+  background: var(--bg-hover);
+  border-color: var(--primary-color);
+  transform: translateX(-5px);
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-xs);
+}
+
+.history-item-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  flex: 1;
+  margin-right: var(--spacing-sm);
+}
+
+.history-item-delete {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: var(--transition);
+}
+
+.history-item-delete:hover {
+  background: rgba(255, 0, 0, 0.1);
+  color: #ff4444;
+}
+
+.history-item-meta {
+  display: flex;
+  gap: var(--spacing-sm);
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-xs);
+}
+
+.history-item-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.history-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ==================== 优化Markdown渲染 ==================== */
+
+.output-content h1 {
+  font-size: 1.8rem;
+  margin: var(--spacing-lg) 0 var(--spacing-md);
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: var(--spacing-sm);
+}
+
+.output-content h2 {
+  font-size: 1.5rem;
+  margin: var(--spacing-md) 0 var(--spacing-sm);
+  color: var(--secondary-color);
+  border-left: 4px solid var(--secondary-color);
+  padding-left: var(--spacing-sm);
+}
+
+.output-content h3 {
+  font-size: 1.2rem;
+  margin: var(--spacing-md) 0 var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.output-content p {
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.output-content ul,
+.output-content ol {
+  margin: var(--spacing-sm) 0;
+  padding-left: var(--spacing-lg);
+  color: var(--text-secondary);
+}
+
+.output-content li {
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.6;
+}
+
+.output-content code {
+  padding: 3px 8px;
+  background: var(--bg-card);
+  border-radius: 4px;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
+  color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+}
+
+.output-content pre {
+  padding: var(--spacing-md);
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin: var(--spacing-sm) 0;
+  border: 1px solid var(--border-color);
+}
+
+.output-content pre code {
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+}
+
+.output-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.output-content em {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.output-content blockquote {
+  border-left: 4px solid var(--primary-color);
+  padding-left: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  color: var(--text-secondary);
+  font-style: italic;
+  background: rgba(254, 44, 85, 0.05);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.output-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--spacing-md) 0;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.output-content table th,
+.output-content table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.output-content table th {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.output-content table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.output-content hr {
+  border: none;
+  border-top: 2px solid var(--border-color);
+  margin: var(--spacing-lg) 0;
+}
+
+.output-content a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: var(--transition);
+}
+
+.output-content a:hover {
+  border-bottom-color: var(--secondary-color);
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .history-sidebar {
+    width: 100%;
+    right: -100%;
+  }
+}
