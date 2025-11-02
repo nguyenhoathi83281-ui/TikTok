@@ -1,5 +1,6 @@
 /**
- * HookMaster AI 5.0 前端脚本
+ * HookMaster AI 5.0 前端脚本 - 增强版
+ * 包含历史记录、localStorage持久化、优化的Markdown渲染
  */
 
 // ==================== 配置 ====================
@@ -15,7 +16,12 @@ const CONFIG = {
     lightning: '⚡ 闪电模式：快速生成3个立即可执行的TikTok爆款脚本，包含完整15秒时间轴和5个3秒剪辑版本。',
     precision: '🎯 精准模式：生成10个差异化脚本矩阵，包含详细分镜、A/B测试方案、评论区运营脚本等。',
     ecosystem: '🏆 生态模式：完整的TikTok营销生态系统，包含30天内容日历、账号矩阵策略、直播方案、数据监控体系等。'
-  }
+  },
+  STORAGE_KEYS: {
+    HISTORY: 'hookmaster_history',
+    CURRENT: 'hookmaster_current'
+  },
+  MAX_HISTORY: 50 // 最多保存50条历史记录
 };
 
 // ==================== 状态管理 ====================
@@ -23,7 +29,8 @@ const CONFIG = {
 const state = {
   providers: [],
   currentGeneration: null,
-  isGenerating: false
+  isGenerating: false,
+  history: []
 };
 
 // ==================== DOM元素 ====================
@@ -45,13 +52,28 @@ const elements = {
   communityList: document.getElementById('communityList'),
   loadingOverlay: document.getElementById('loadingOverlay'),
   loadingTime: document.getElementById('loadingTime'),
-  toast: document.getElementById('toast')
+  toast: document.getElementById('toast'),
+
+  // 历史记录相关
+  historyBtn: document.getElementById('historyBtn'),
+  historyBadge: document.getElementById('historyBadge'),
+  historySidebar: document.getElementById('historySidebar'),
+  historyOverlay: document.getElementById('historyOverlay'),
+  closeHistoryBtn: document.getElementById('closeHistoryBtn'),
+  clearHistoryBtn: document.getElementById('clearHistoryBtn'),
+  historyList: document.getElementById('historyList')
 };
 
 // ==================== 初始化 ====================
 
 async function init() {
   console.log('初始化应用...');
+
+  // 加载历史记录
+  loadHistory();
+
+  // 加载上次的内容
+  loadLastContent();
 
   // 检查服务器状态
   await checkServerHealth();
@@ -68,6 +90,156 @@ async function init() {
   console.log('初始化完成');
 }
 
+// ==================== 本地存储管理 ====================
+
+function saveToStorage(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error('保存到localStorage失败:', error);
+  }
+}
+
+function loadFromStorage(key) {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    console.error('从localStorage加载失败:', error);
+    return null;
+  }
+}
+
+// ==================== 历史记录管理 ====================
+
+function loadHistory() {
+  const saved = loadFromStorage(CONFIG.STORAGE_KEYS.HISTORY);
+  state.history = saved || [];
+  updateHistoryUI();
+}
+
+function saveHistory() {
+  // 限制历史记录数量
+  if (state.history.length > CONFIG.MAX_HISTORY) {
+    state.history = state.history.slice(0, CONFIG.MAX_HISTORY);
+  }
+  saveToStorage(CONFIG.STORAGE_KEYS.HISTORY, state.history);
+  updateHistoryUI();
+}
+
+function addToHistory(generation) {
+  const historyItem = {
+    id: Date.now(),
+    timestamp: new Date().toISOString(),
+    product: elements.product.value.substring(0, 100), // 只保存前100字符
+    mode: elements.mode.value,
+    provider: elements.provider.value,
+    content: generation.content,
+    metadata: generation.metadata
+  };
+
+  state.history.unshift(historyItem); // 添加到开头
+  saveHistory();
+  showToast('已保存到历史记录', 'success');
+}
+
+function deleteFromHistory(id) {
+  state.history = state.history.filter(item => item.id !== id);
+  saveHistory();
+  showToast('已删除', 'success');
+}
+
+function clearHistory() {
+  if (confirm('确定要清空所有历史记录吗？')) {
+    state.history = [];
+    saveHistory();
+    showToast('历史记录已清空', 'success');
+  }
+}
+
+function loadHistoryItem(id) {
+  const item = state.history.find(h => h.id === id);
+  if (item) {
+    state.currentGeneration = {
+      content: item.content,
+      metadata: item.metadata
+    };
+    renderOutput(item.content);
+    renderMetadata(item.metadata);
+    closeHistory();
+    showToast('已加载历史记录', 'info');
+  }
+}
+
+function updateHistoryUI() {
+  // 更新徽章数字
+  elements.historyBadge.textContent = state.history.length;
+
+  // 更新历史列表
+  if (state.history.length === 0) {
+    elements.historyList.innerHTML = '<div class="empty-state"><p>暂无历史记录</p></div>';
+    return;
+  }
+
+  elements.historyList.innerHTML = state.history.map(item => `
+    <div class="history-item" onclick="HookMasterApp.loadHistoryItem(${item.id})">
+      <div class="history-item-header">
+        <div class="history-item-title">${escapeHtml(item.product)}...</div>
+        <button class="history-item-delete" onclick="event.stopPropagation(); HookMasterApp.deleteFromHistory(${item.id})" title="删除">
+          🗑️
+        </button>
+      </div>
+      <div class="history-item-meta">
+        <span>🕒 ${formatDate(item.timestamp)}</span>
+        <span>${getModeIcon(item.mode)} ${getModeLabel(item.mode)}</span>
+        <span>🤖 ${item.provider}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showHistory() {
+  elements.historySidebar.classList.add('active');
+  elements.historyOverlay.classList.add('active');
+}
+
+function closeHistory() {
+  elements.historySidebar.classList.remove('active');
+  elements.historyOverlay.classList.remove('active');
+}
+
+// ==================== 保存当前内容 ====================
+
+function saveCurrentContent() {
+  if (state.currentGeneration) {
+    saveToStorage(CONFIG.STORAGE_KEYS.CURRENT, {
+      generation: state.currentGeneration,
+      product: elements.product.value,
+      targetAudience: elements.targetAudience.value,
+      additionalRequirements: elements.additionalRequirements.value,
+      mode: elements.mode.value,
+      provider: elements.provider.value
+    });
+  }
+}
+
+function loadLastContent() {
+  const saved = loadFromStorage(CONFIG.STORAGE_KEYS.CURRENT);
+  if (saved) {
+    // 恢复表单内容
+    elements.product.value = saved.product || '';
+    elements.targetAudience.value = saved.targetAudience || '';
+    elements.additionalRequirements.value = saved.additionalRequirements || '';
+
+    // 恢复生成结果
+    if (saved.generation) {
+      state.currentGeneration = saved.generation;
+      renderOutput(saved.generation.content);
+      renderMetadata(saved.generation.metadata);
+    }
+  }
+}
+
 // ==================== 服务器健康检查 ====================
 
 async function checkServerHealth() {
@@ -75,7 +247,7 @@ async function checkServerHealth() {
     const response = await fetch(`${CONFIG.API_BASE_URL}/health`);
     const data = await response.json();
 
-    if (data.status === 'ok') {
+    if (data.status === 'ok' || data.status === 'healthy') {
       updateStatus('online', `服务正常 (${data.availableProviders} 个AI模型可用)`);
     } else {
       updateStatus('offline', '服务异常');
@@ -103,6 +275,12 @@ async function loadProviders() {
     if (data.success && data.providers.length > 0) {
       state.providers = data.providers;
       renderProviders();
+
+      // 恢复上次选择的提供商
+      const saved = loadFromStorage(CONFIG.STORAGE_KEYS.CURRENT);
+      if (saved && saved.provider) {
+        elements.provider.value = saved.provider;
+      }
     } else {
       elements.provider.innerHTML = '<option value="">未配置AI模型</option>';
       showToast('警告：未检测到可用的AI模型，请配置API Key', 'error');
@@ -123,8 +301,7 @@ function renderProviders() {
     elements.provider.appendChild(option);
   });
 
-  // 默认选择第一个
-  if (state.providers.length > 0) {
+  if (state.providers.length > 0 && !elements.provider.value) {
     elements.provider.value = state.providers[0].id;
   }
 }
@@ -180,12 +357,26 @@ function bindEvents() {
 
   // 下载按钮
   elements.downloadBtn.addEventListener('click', handleDownload);
+
+  // 历史记录相关
+  elements.historyBtn.addEventListener('click', showHistory);
+  elements.closeHistoryBtn.addEventListener('click', closeHistory);
+  elements.historyOverlay.addEventListener('click', closeHistory);
+  elements.clearHistoryBtn.addEventListener('click', clearHistory);
+
+  // 保存表单内容
+  ['product', 'targetAudience', 'additionalRequirements', 'mode', 'provider'].forEach(id => {
+    const element = elements[id];
+    if (element) {
+      element.addEventListener('change', saveCurrentContent);
+      element.addEventListener('input', saveCurrentContent);
+    }
+  });
 }
 
 // ==================== 生成脚本 ====================
 
 async function handleGenerate() {
-  // 验证输入
   const product = elements.product.value.trim();
   if (!product) {
     showToast('请输入产品或服务描述', 'error');
@@ -198,7 +389,6 @@ async function handleGenerate() {
     return;
   }
 
-  // 准备请求数据
   const requestData = {
     product: product,
     targetAudience: elements.targetAudience.value.trim(),
@@ -209,7 +399,6 @@ async function handleGenerate() {
 
   console.log('生成请求:', requestData);
 
-  // 显示加载状态
   showLoading(true);
   state.isGenerating = true;
   elements.generateBtn.disabled = true;
@@ -229,6 +418,13 @@ async function handleGenerate() {
       state.currentGeneration = data.data;
       renderOutput(data.data.content);
       renderMetadata(data.data.metadata);
+
+      // 保存到历史记录
+      addToHistory(data.data);
+
+      // 保存当前内容
+      saveCurrentContent();
+
       showToast('生成成功！', 'success');
     } else {
       throw new Error(data.error || '生成失败');
@@ -240,7 +436,7 @@ async function handleGenerate() {
       <div class="empty-state">
         <div class="empty-icon">❌</div>
         <h3>生成失败</h3>
-        <p>${error.message}</p>
+        <p>${escapeHtml(error.message)}</p>
         <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-tertiary);">
           请检查：<br>
           1. 后端服务是否正常运行<br>
@@ -256,11 +452,11 @@ async function handleGenerate() {
   }
 }
 
-// ==================== 渲染输出 ====================
+// ==================== 渲染输出（使用Marked.js） ====================
 
 function renderOutput(content) {
-  // 使用简单的Markdown渲染
-  const html = markdownToHtml(content);
+  // 使用Marked.js渲染Markdown
+  const html = marked.parse(content);
   elements.output.innerHTML = html;
 
   // 显示操作按钮
@@ -269,39 +465,6 @@ function renderOutput(content) {
 
   // 滚动到顶部
   elements.output.scrollTop = 0;
-}
-
-function markdownToHtml(markdown) {
-  let html = markdown;
-
-  // 标题
-  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-
-  // 粗体
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-  // 代码块
-  html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-
-  // 行内代码
-  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-  // 列表
-  html = html.replace(/^\* (.*$)/gim, '<li>$1</li>');
-  html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-
-  // 段落
-  html = html.split('\n\n').map(para => {
-    if (para.startsWith('<h') || para.startsWith('<ul') || para.startsWith('<pre')) {
-      return para;
-    }
-    return `<p>${para}</p>`;
-  }).join('\n');
-
-  return html;
 }
 
 // ==================== 渲染元数据 ====================
@@ -330,15 +493,6 @@ function renderMetadata(metadata) {
   elements.metadataCard.style.display = 'block';
 }
 
-function getModeLabel(mode) {
-  const labels = {
-    lightning: '⚡ 闪电模式',
-    precision: '🎯 精准模式',
-    ecosystem: '🏆 生态模式'
-  };
-  return labels[mode] || mode;
-}
-
 // ==================== 复制功能 ====================
 
 async function handleCopy() {
@@ -361,18 +515,17 @@ function handleDownload() {
   const content = state.currentGeneration.content;
   const metadata = state.currentGeneration.metadata;
 
-  // 添加元数据到文件头部
   const header = `---
 生成时间: ${new Date().toLocaleString('zh-CN')}
 生成模式: ${getModeLabel(metadata.mode)}
 AI模型: ${metadata.model}
+产品描述: ${elements.product.value.substring(0, 100)}
 ---
 
 `;
 
   const fullContent = header + content;
 
-  // 创建Blob并下载
   const blob = new Blob([fullContent], { type: 'text/markdown;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -397,7 +550,6 @@ function showLoading(show) {
 let toastTimer = null;
 
 function showToast(message, type = 'info') {
-  // 清除之前的定时器
   if (toastTimer) {
     clearTimeout(toastTimer);
   }
@@ -410,16 +562,76 @@ function showToast(message, type = 'info') {
   }, 3000);
 }
 
+// ==================== 工具函数 ====================
+
+function getModeLabel(mode) {
+  const labels = {
+    lightning: '⚡ 闪电模式',
+    precision: '🎯 精准模式',
+    ecosystem: '🏆 生态模式'
+  };
+  return labels[mode] || mode;
+}
+
+function getModeIcon(mode) {
+  const icons = {
+    lightning: '⚡',
+    precision: '🎯',
+    ecosystem: '🏆'
+  };
+  return icons[mode] || '📝';
+}
+
+function formatDate(isoString) {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diff = now - date;
+
+  // 小于1分钟
+  if (diff < 60000) {
+    return '刚刚';
+  }
+  // 小于1小时
+  if (diff < 3600000) {
+    return `${Math.floor(diff / 60000)}分钟前`;
+  }
+  // 小于24小时
+  if (diff < 86400000) {
+    return `${Math.floor(diff / 3600000)}小时前`;
+  }
+  // 小于7天
+  if (diff < 604800000) {
+    return `${Math.floor(diff / 86400000)}天前`;
+  }
+  // 其他情况显示完整日期
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 // ==================== 启动应用 ====================
 
 document.addEventListener('DOMContentLoaded', init);
 
-// ==================== 导出（用于调试） ====================
+// ==================== 导出API（用于调试和历史记录点击） ====================
 
 window.HookMasterApp = {
   state,
   config: CONFIG,
   checkHealth: checkServerHealth,
   loadProviders,
-  loadCommunities
+  loadCommunities,
+  loadHistoryItem,
+  deleteFromHistory,
+  clearHistory
 };

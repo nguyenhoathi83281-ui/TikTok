@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HookMaster AI 5.0 ⚡ - TikTok病毒算法征服系统</title>
     <link rel="stylesheet" href="style.css">
+    <!-- 引入Marked.js - 专业的Markdown渲染库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <!-- 背景装饰 -->
@@ -18,9 +20,15 @@
                 <h1>⚡ HookMaster AI 5.0</h1>
                 <p class="tagline">TikTok病毒算法征服系统</p>
             </div>
-            <div class="status-indicator" id="statusIndicator">
-                <span class="status-dot"></span>
-                <span class="status-text">正在检查服务...</span>
+            <div class="header-actions">
+                <button class="icon-btn" id="historyBtn" title="历史记录">
+                    <span>📜</span>
+                    <span class="badge" id="historyBadge">0</span>
+                </button>
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">正在检查服务...</span>
+                </div>
             </div>
         </header>
 
@@ -156,6 +164,25 @@
             <p class="footer-note">本系统仅供学习和合法营销使用，请遵守TikTok社区规范</p>
         </footer>
     </div>
+
+    <!-- 历史记录侧边栏 -->
+    <div class="history-sidebar" id="historySidebar">
+        <div class="history-header">
+            <h3>📜 历史记录</h3>
+            <button class="icon-btn" id="closeHistoryBtn">✕</button>
+        </div>
+        <div class="history-actions">
+            <button class="small-btn" id="clearHistoryBtn">清空历史</button>
+        </div>
+        <div class="history-list" id="historyList">
+            <div class="empty-state">
+                <p>暂无历史记录</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 历史记录遮罩层 -->
+    <div class="history-overlay" id="historyOverlay"></div>
 
     <!-- 加载提示 -->
     <div class="loading-overlay" id="loadingOverlay" style="display: none;">
